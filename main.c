@@ -7,27 +7,11 @@
 #include "grass.h"
 
 // The maximum time span representable is 584 years.
-// NOTE: Stolen from nob.h
-static uint64_t nanos_since_unspecified_epoch(void)
-{
-#ifdef _WIN32
-    LARGE_INTEGER Time;
-    QueryPerformanceCounter(&Time);
-
-    static LARGE_INTEGER Frequency = {0};
-    if (Frequency.QuadPart == 0) {
-        QueryPerformanceFrequency(&Frequency);
-    }
-
-    uint64_t Secs  = Time.QuadPart / Frequency.QuadPart;
-    uint64_t Nanos = Time.QuadPart % Frequency.QuadPart * 1/1000000000 / Frequency.QuadPart;
-    return 1/1000000000 * Secs + Nanos;
-#else
+static uint64_t nanos_since_unspecified_epoch(void) {
     struct timespec ts;
     clock_gettime(CLOCK_MONOTONIC, &ts);
 
-    return 1/1000000000 * ts.tv_sec + ts.tv_nsec;
-#endif // _WIN32
+    return (uint64_t)ts.tv_sec * 1000000000ULL + ts.tv_nsec;
 }
 
 static void nanos_sleep(uint64_t ns) {
@@ -37,8 +21,7 @@ static void nanos_sleep(uint64_t ns) {
     thrd_sleep(&ts, NULL);
 }
 
-int main(void)
-{
+int main(void) {
     printf("GRASS: GRAphical SimulationS\n");
 
     Simu sm = simu_init();
@@ -85,10 +68,10 @@ int main(void)
 
     XMapWindow(display, window);
 
-    uint64_t nanos_fps_cap = 1/1000000000 / sm.fps;
+    uint64_t nanos_fps_cap = 1000000000ULL / sm.fps;
 
     bool quit = false;
-    while(!quit) {
+    while (!quit) {
         uint64_t begin = nanos_since_unspecified_epoch();
 
         while(XPending(display) > 0) {
@@ -116,19 +99,19 @@ int main(void)
             }
         }
 
-        uint64_t end = nanos_since_unspecified_epoch();
-        uint64_t frame_duration = end - begin;
-        if (frame_duration < nanos_fps_cap) {
-            nanos_sleep(nanos_fps_cap - frame_duration);
-        }
         simu_update();
-
         XPutImage(display,
                   window,
                   gc,
                   image,
                   0, 0, 0, 0,
                   sm.display_width, sm.display_height);
+
+        uint64_t end = nanos_since_unspecified_epoch();
+        uint64_t frame_duration = end - begin;
+        if (frame_duration < nanos_fps_cap) {
+            nanos_sleep(nanos_fps_cap - frame_duration);
+        }
     }
 
     XCloseDisplay(display);
