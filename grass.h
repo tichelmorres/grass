@@ -22,9 +22,10 @@ typedef struct {
     uint32_t* display;
     uint16_t  display_width;
     uint16_t  display_height;
+    int       shmid;   // -1 if SHM unavailable, main.c uses this to build XShmSegmentInfo
 } Simu;
 
 Simu simu_init();
-void simu_update();
+void simu_update(Simu* sm);
 
 #endif // SIMU_H_

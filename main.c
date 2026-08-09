@@ -3,6 +3,10 @@
 #include <time.h>
 
 #include <X11/Xlib.h>
+#include <X11/extensions/XShm.h>
+#include <sys/ipc.h>
+#include <sys/shm.h>
+#include <sys/mman.h>
 
 #include "grass.h"
 
@@ -26,9 +30,9 @@ int main(void) {
 
     Simu sm = simu_init();
 
-    printf("sm.fps = %d\n"            , sm.fps);
-    printf("sm.display_width = %d\n"  , sm.display_width);
-    printf("sm.display_height = %d\n" , sm.display_height);
+    printf("sm.fps            = %d\n", sm.fps);
+    printf("sm.display_width  = %d\n", sm.display_width);
+    printf("sm.display_height = %d\n", sm.display_height);
 
     Display *display = XOpenDisplay(NULL);
     if (display == NULL) {
@@ -36,28 +40,37 @@ int main(void) {
         exit(1);
     }
 
-    Window window = XCreateSimpleWindow(display,
-                                        XDefaultRootWindow(display),
-                                        0, 0,
-                                        sm.display_width, sm.display_height,
-                                        0,
-                                        0,
-                                        0);
+    Bool mit_shm = XShmQueryExtension(display);
+
+    Window window = XCreateSimpleWindow(display, XDefaultRootWindow(display),
+                                        0, 0, sm.display_width, sm.display_height,
+                                        0, 0, 0);
 
     XStoreName(display, window, "GRASS");
 
     XWindowAttributes wa = {0};
     XGetWindowAttributes(display, window, &wa);
 
-    XImage *image = XCreateImage(display,
-                                 wa.visual,
-                                 wa.depth,
-                                 ZPixmap,
-                                 0,
-                                 (char*) sm.display,
-                                 sm.display_width, sm.display_height,
-                                 32,
-                                 sm.display_width * sizeof(*sm.display));
+    XImage *image;
+    XShmSegmentInfo shminfo = {0};
+
+    if (mit_shm) {
+        shminfo.shmid = shmget(IPC_PRIVATE,
+                               sm.display_width * sm.display_height * sizeof(uint32_t),
+                               IPC_CREAT | 0777);
+        sm.display = shmat(shminfo.shmid, 0, 0);
+        shminfo.shmaddr = (char*) sm.display;
+        shminfo.readOnly = False;
+        XShmAttach(display, &shminfo);
+        image = XShmCreateImage(display, wa.visual, wa.depth, ZPixmap,
+                                (char*) sm.display, &shminfo,
+                                sm.display_width, sm.display_height);
+    } else {
+        image = XCreateImage(display, wa.visual, wa.depth, ZPixmap, 0,
+                             (char*) sm.display,
+                             sm.display_width, sm.display_height,
+                             32, sm.display_width * sizeof(uint32_t));
+    }
 
     GC gc = XCreateGC(display, window, 0, NULL);
 
@@ -99,11 +112,8 @@ int main(void) {
             }
         }
 
-        simu_update();
-        XPutImage(display,
-                  window,
-                  gc,
-                  image,
+        simu_update(&sm);
+        XPutImage(display, window, gc, image,
                   0, 0, 0, 0,
                   sm.display_width, sm.display_height);
 
