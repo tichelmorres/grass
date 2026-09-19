@@ -18,6 +18,10 @@ typedef struct {
 //                                          uint32_t x2, uint32_t y2,
 //                                          uint32_t x3, uint32_t y3);
 
-void draw_triangle(uint32_t side, Simu* sm, Color color);
+/// Draws a centered triangle by side
+void linalc_draw_bl_triangle_by_side(uint32_t side, Simu* sm, Color color);
+void linalc_draw_ur_triangle_by_side(uint32_t side, Simu* sm, Color color);
+void linalc_draw_br_triangle_by_side(uint32_t side, Simu* sm, Color color);
+void linalc_draw_ul_triangle_by_side(uint32_t side, Simu* sm, Color color);
 
 #endif // LINALC_H_

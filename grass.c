@@ -64,5 +64,8 @@ void simu_update(Simu* sm) {
     //               cx + DISPLAY_WIDTH/4, cy + DISPLAY_HEIGHT/4,
     //               cx,                   cy - DISPLAY_HEIGHT/4,
     //               sm, triangle_color);
-    draw_triangle(DISPLAY_HEIGHT/5, sm, triangle_color);
+    linalc_draw_ul_triangle_by_side(DISPLAY_HEIGHT/5, sm, triangle_color);
+    linalc_draw_bl_triangle_by_side(DISPLAY_HEIGHT/5, sm, triangle_color);
+    linalc_draw_ur_triangle_by_side(DISPLAY_HEIGHT/5, sm, triangle_color);
+    linalc_draw_br_triangle_by_side(DISPLAY_HEIGHT/5, sm, triangle_color);
 }

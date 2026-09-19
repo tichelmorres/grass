@@ -3,8 +3,8 @@
 #include <threads.h>
 #include <time.h>
 
-#ifndef SIMU_H_
-#define SIMU_H_
+#ifndef GRASS_H_
+#define GRASS_H_
 
 #define TODO(message) do {                                                                    \
                           fprintf(stderr, "%s:%d: TODO: %s \n", __FILE__, __LINE__, message); \
@@ -28,4 +28,4 @@ typedef struct {
 Simu simu_init();
 void simu_update(Simu* sm);
 
-#endif // SIMU_H_
+#endif // GRASS_H_
