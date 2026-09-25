@@ -42,26 +42,26 @@
 //     };
 // }
 
-// @TODO      Implement base/height version
+// @TODO      Implement base/height versions
 // @Refactor  Generalize Point structures.
 //               (to always use center is
 //                not a good idea.       )
 
 /*
-       we start here
-             |  top
-             v   v
+       we start here            
+             |  top             
+             v   v              
     left ->  +-------+  <- right
-             |.|    /
-             |-    /
-             |    /
-             |   /
-             |  /
-             | /
-             |/
-             +
-             ^
-           bottom
+             |.|    /           
+             |-    /            
+             |    /             
+             |   /              
+             |  /               
+             | /                
+             |/                 
+             +                  
+             ^                  
+           bottom               
  */
 void linalc_draw_ul_triangle_by_side(uint32_t side, Simu* sm, Color color)
 {
